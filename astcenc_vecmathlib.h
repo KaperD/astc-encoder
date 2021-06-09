@@ -47,6 +47,7 @@
  *     * 4-wide for x86-64 SSE2.
  *     * 4-wide for x86-64 SSE4.1.
  *     * 8-wide for x86-64 AVX2.
+ *
  */
 
 #ifndef ASTC_VECMATHLIB_H_INCLUDED
@@ -148,7 +149,7 @@
  *
  * @return The rounded value.
  */
-ASTCENC_SIMD_INLINE unsigned int round_down_to_simd_multiple_8(unsigned int count)
+ASTCENC_SIMD_INLINE int round_down_to_simd_multiple_8(int count)
 {
 	return count & ~(8 - 1);
 }
@@ -160,7 +161,7 @@ ASTCENC_SIMD_INLINE unsigned int round_down_to_simd_multiple_8(unsigned int coun
  *
  * @return The rounded value.
  */
-ASTCENC_SIMD_INLINE unsigned int round_down_to_simd_multiple_4(unsigned int count)
+ASTCENC_SIMD_INLINE int round_down_to_simd_multiple_4(int count)
 {
 	return count & ~(4 - 1);
 }
@@ -174,7 +175,7 @@ ASTCENC_SIMD_INLINE unsigned int round_down_to_simd_multiple_4(unsigned int coun
  *
  * @return The rounded value.
  */
-ASTCENC_SIMD_INLINE unsigned int round_down_to_simd_multiple_vla(unsigned int count)
+ASTCENC_SIMD_INLINE int round_down_to_simd_multiple_vla(int count)
 {
 	return count & ~(ASTCENC_SIMD_WIDTH - 1);
 }
@@ -188,7 +189,7 @@ ASTCENC_SIMD_INLINE unsigned int round_down_to_simd_multiple_vla(unsigned int co
  *
  * @return The rounded value.
  */
-ASTCENC_SIMD_INLINE unsigned int round_up_to_simd_multiple_vla(unsigned int count)
+ASTCENC_SIMD_INLINE int round_up_to_simd_multiple_vla(int count)
 {
 	int multiples = (count + ASTCENC_SIMD_WIDTH - 1) / ASTCENC_SIMD_WIDTH;
 	return multiples * ASTCENC_SIMD_WIDTH;
@@ -244,30 +245,6 @@ static ASTCENC_SIMD_INLINE vfloat4 unit4()
 static ASTCENC_SIMD_INLINE vfloat4 unit3()
 {
 	return vfloat4(0.57735f, 0.57735f, 0.57735f, 0.0f);
-}
-
-/**
- * @brief Factory that returns a unit length 2 component vfloat4.
- */
-static ASTCENC_SIMD_INLINE vfloat4 unit2()
-{
-	return vfloat4(0.70711f, 0.70711f, 0.0f, 0.0f);
-}
-
-/**
- * @brief Factory that returns a 3 component vfloat4.
- */
-static ASTCENC_SIMD_INLINE vfloat4 vfloat3(float a, float b, float c)
-{
-	return vfloat4(a, b, c, 0.0f);
-}
-
-/**
- * @brief Factory that returns a 2 component vfloat4.
- */
-static ASTCENC_SIMD_INLINE vfloat4 vfloat2(float a, float b)
-{
-	return vfloat4(a, b, 0.0f, 0.0f);
 }
 
 /**
@@ -381,7 +358,7 @@ static ASTCENC_SIMD_INLINE vfloat4 pow(vfloat4 x, vfloat4 y)
  *
  * Valid for all data values of @c a; will return a per-lane value [0, 32].
  */
-static ASTCENC_SIMD_INLINE vint4 clz(vint4 a)
+ASTCENC_SIMD_INLINE vint4 clz(vint4 a)
 {
 	// This function is a horrible abuse of floating point exponents to convert
 	// the original integer value into a 2^N encoding we can recover easily.
@@ -403,7 +380,7 @@ static ASTCENC_SIMD_INLINE vint4 clz(vint4 a)
  *
  * Use of signed int mean that this is only valid for values in range [0, 31].
  */
-static ASTCENC_SIMD_INLINE vint4 two_to_the_n(vint4 a)
+ASTCENC_SIMD_INLINE vint4 two_to_the_n(vint4 a)
 {
 	// 2^30 is the largest signed number than can be represented
 	assert(all(a < vint4(31)));
@@ -423,7 +400,7 @@ static ASTCENC_SIMD_INLINE vint4 two_to_the_n(vint4 a)
 /**
  * @brief Convert unorm16 [0, 65535] to float16 in range [0, 1].
  */
-static ASTCENC_SIMD_INLINE vint4 unorm16_to_sf16(vint4 p)
+ASTCENC_SIMD_INLINE vint4 unorm16_to_sf16(vint4 p)
 {
 	vint4 fp16_one = vint4(0x3C00);
 	vint4 fp16_small = lsl<8>(p);
@@ -457,7 +434,7 @@ static ASTCENC_SIMD_INLINE vint4 unorm16_to_sf16(vint4 p)
 /**
  * @brief Convert 16-bit LNS to float16.
  */
-static ASTCENC_SIMD_INLINE vint4 lns_to_sf16(vint4 p)
+ASTCENC_SIMD_INLINE vint4 lns_to_sf16(vint4 p)
 {
 	vint4 mc = p & 0x7FF;
 	vint4 ec = lsr<11>(p);
@@ -486,7 +463,7 @@ static ASTCENC_SIMD_INLINE vint4 lns_to_sf16(vint4 p)
  *
  * @return The mantissa.
  */
-static ASTCENC_SIMD_INLINE vfloat4 frexp(vfloat4 a, vint4& exp)
+static inline vfloat4 frexp(vfloat4 a, vint4& exp)
 {
 	// Interpret the bits as an integer
 	vint4 ai = float_as_int(a);
@@ -502,7 +479,7 @@ static ASTCENC_SIMD_INLINE vfloat4 frexp(vfloat4 a, vint4& exp)
 /**
  * @brief Convert float to 16-bit LNS.
  */
-static ASTCENC_SIMD_INLINE vfloat4 float_to_lns(vfloat4 a)
+static inline vfloat4 float_to_lns(vfloat4 a)
 {
 	vint4 exp;
 	vfloat4 mant = frexp(a, exp);

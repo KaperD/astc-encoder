@@ -150,17 +150,6 @@ struct vfloat4
 	}
 
 	/**
-	 * @brief Return a swizzled float 2.
-	 */
-	template <int l0, int l1> ASTCENC_SIMD_INLINE vfloat4 swz() const
-	{
-		vfloat4 result(_mm_shuffle_ps(m, m, l0 | l1 << 2));
-		result.set_lane<2>(0.0f);
-		result.set_lane<3>(0.0f);
-		return result;
-	}
-
-	/**
 	 * @brief Return a swizzled float 3.
 	 */
 	template <int l0, int l1, int l2> ASTCENC_SIMD_INLINE vfloat4 swz() const
@@ -337,15 +326,6 @@ struct vmask4
 	ASTCENC_SIMD_INLINE explicit vmask4(__m128i a)
 	{
 		m = _mm_castsi128_ps(a);
-	}
-
-	/**
-	 * @brief Construct from 1 scalar value.
-	 */
-	ASTCENC_SIMD_INLINE explicit vmask4(bool a)
-	{
-		vint4 mask(a == false ? 0 : -1);
-		m = _mm_castsi128_ps(mask.m);
 	}
 
 	/**
