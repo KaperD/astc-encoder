@@ -2,7 +2,7 @@ FROM mirrors--dockerhub.eu-west-1.artifactory.aws.arm.com/ubuntu:22.04
 
 # Jenkins image build job uses this label to tag version of image
 # Update when you make a change
-LABEL imageVersion="4.0.0"
+LABEL imageVersion="4.0.1"
 
 RUN useradd -u 1000 -U -m -c Jenkins jenkins
 
