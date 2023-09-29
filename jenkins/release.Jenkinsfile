@@ -15,7 +15,14 @@
  * similarly on different operating systems, so we test one compiler per OS.
  */
 
-@Library('hive-infra-library@changes/86/295486/1') _
+@Library('hive-infra-library@changes/69/555469/1') _
+
+final Map K8S_CONFIG = [
+    registry:               'mobile-studio--docker.eu-west-1.artifactory.aws.arm.com',
+    registryCredentials:    'artifactory-ms-docker',
+    image:                  'astcenc',
+    tag:                    '4'
+]
 
 pipeline {
   agent none
@@ -32,7 +39,7 @@ pipeline {
         stage('Coverity') {
           agent {
             kubernetes {
-              yaml '''
+              yaml """
 apiVersion: v1
 kind: Pod
 spec:
@@ -40,10 +47,10 @@ spec:
     runAsUser: 1000
     runAsGroup: 1000
   imagePullSecrets:
-    - name: artifactory-ms-docker
+    - name: ${K8S_CONFIG.registryCredentials}
   containers:
     - name: astcenc
-      image: mobile-studio--docker.eu-west-1.artifactory.aws.arm.com/astcenc:3.1.0
+      image: ${K8S_CONFIG.registry}/${K8S_CONFIG.image}:${K8S_CONFIG.tag}
       command:
         - sleep
       args:
@@ -52,7 +59,7 @@ spec:
         requests:
           cpu: 4
           memory: 8Gi
-'''
+"""
             defaultContainer 'astcenc'
             }
           }
@@ -289,7 +296,7 @@ spec:
     stage('Artifactory') {
       agent {
         kubernetes {
-          yaml '''
+          yaml """
 apiVersion: v1
 kind: Pod
 spec:
@@ -297,10 +304,10 @@ spec:
     runAsUser: 1000
     runAsGroup: 1000
   imagePullSecrets:
-    - name: artifactory-ms-docker
+    - name: ${K8S_CONFIG.registryCredentials}
   containers:
     - name: astcenc
-      image: mobile-studio--docker.eu-west-1.artifactory.aws.arm.com/astcenc:3.0.0
+      image: ${K8S_CONFIG.registry}/${K8S_CONFIG.image}:${K8S_CONFIG.tag}
       command:
         - sleep
       args:
@@ -309,7 +316,7 @@ spec:
         requests:
           cpu: 1
           memory: 4Gi
-'''
+"""
           defaultContainer 'astcenc'
         }
       }
