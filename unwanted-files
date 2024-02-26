@@ -1,0 +1,6 @@
+Test/
+Binary/
+Source/Fuzzers/
+Source/GoogleTest/
+Source/UnitTest/
+.gitmodules
